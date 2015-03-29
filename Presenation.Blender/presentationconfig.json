@@ -26,16 +26,24 @@
                     "objects": [
                         { "name": "cube2", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
                         { "name": "cube", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
-                        { "name": "text", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 },
-                    "extrude": 0.3 }
+                        {
+                            "name": "text",
+                            "position": { "x": 0, "y": 0, "z": 0 },
+                            "scale": { "x": 1, "y": 1, "z": 1 },
+                            "extrude": 0.3
+                        }
                     ]
                 },
                 {
                     "frame": 150,
                     "objects": [
                         { "name": "cube2", "position": { "x": -12, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 2, "z": 1 } },
-                        { "name": "text", "position": { "x": 5, "y": 5, "z": 0 }, "scale": { "x": 1, "y": 2, "z": 1 } ,
-                    "extrude": 0.1}
+                        {
+                            "name": "text",
+                            "position": { "x": 5, "y": 5, "z": 0 },
+                            "scale": { "x": 1, "y": 2, "z": 1 },
+                            "extrude": 0.1
+                        }
                     ]
                 },
                 {
