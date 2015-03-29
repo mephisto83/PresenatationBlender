@@ -1,0 +1,48 @@
+{
+    "settings": { },
+    "scenes": [
+        {
+            "name": "default",
+            "objects": [
+                {
+                    "name": "cube",
+                    "type": "cube"
+                },
+                {
+                    "name": "cube2",
+                    "type": "cube"
+                },
+                {
+                    "name": "text",
+                    "type": "text",
+                    "value": "test",
+                    "font": "mriamc",
+                    "extrude": 0.3
+                }
+            ],
+            "keyframes": [
+                {
+                    "frame": 1,
+                    "objects": [
+                        { "name": "cube2", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+                        { "name": "cube", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+                        { "name": "text", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 },
+                    "extrude": 0.3 }
+                    ]
+                },
+                {
+                    "frame": 150,
+                    "objects": [
+                        { "name": "cube2", "position": { "x": -12, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 2, "z": 1 } },
+                        { "name": "text", "position": { "x": 5, "y": 5, "z": 0 }, "scale": { "x": 1, "y": 2, "z": 1 } ,
+                    "extrude": 0.1}
+                    ]
+                },
+                {
+                    "frame": 50,
+                    "objects": [ { "name": "cube", "position": { "x": 10 }, "scale": { "x": 5, "y": 1, "z": 1 } } ]
+                }
+            ]
+        }
+    ]
+}
