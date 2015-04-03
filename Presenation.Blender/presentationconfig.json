@@ -12,6 +12,11 @@
                     "name": "cube2",
                     "type": "cube"
                 },
+                { 
+                    "name": "cube3",
+                    "type": "cube",
+                    "parent": "text"
+                },
                 {
                     "name": "text",
                     "type": "text",
@@ -26,6 +31,7 @@
                     "objects": [
                         { "name": "cube2", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
                         { "name": "cube", "position": { "x": 0, "y": 0, "z": 0 }, "scale": { "x": 1, "y": 1, "z": 1 } },
+                        { "name": "cube3", "position": { "x": 0, "y": 0, "z": 5 }, "scale": { "x": 1, "y": 1, "z": 1 } },
                         {
                             "name": "text",
                             "position": { "x": 0, "y": 0, "z": 0 },

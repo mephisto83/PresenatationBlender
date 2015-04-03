@@ -1,0 +1,39 @@
+﻿{
+    "settings": { },
+    "scenes": [
+        {
+            "name": "default",
+            "armatures": [
+                {
+                    "name": "test1",
+                    "chain": [ "test", "test2", "test3" ]
+                }
+            ],
+            "objects": [
+                 {
+                    "name": "text",
+                    "type": "text",
+                    "value": "test",
+                    "font": "mriamc",
+                    "extrude": 0.3
+                }
+            ],
+            "keyframes": [
+                {
+                    "frame": 1,
+                    "objects": [
+                        {
+                            "name": "text"
+                        },
+                        {
+                            "name": "text"
+                        },
+                        {
+                            "name": "text"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

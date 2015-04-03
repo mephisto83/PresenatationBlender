@@ -1,0 +1,83 @@
+{
+    "settings": { },
+    "scenes": [
+        {
+            "name": "default",
+            "armatures": [
+                {
+                    "name": "test1",
+                    "chain": [ "text", "text2", "text3", "text4", "text5" ],
+                    "grid": {
+                        "x": 4,
+                        "y": 4,
+                        "z": 4
+                    }
+                }
+            ],
+            "objects": [
+                {
+                    "name": "text",
+                    "type": "text",
+                    "value": "test \n 1",
+                    "font": "mriamc",
+                    "extrude": 0.1
+                },
+                {
+                    "name": "text2",
+                    "type": "text",
+                    "value": "test 2",
+                    "font": "mriamc",
+                    "extrude": 0.1
+                },
+                {
+                    "name": "text3",
+                    "type": "text",
+                    "value": "test 3",
+                    "font": "mriamc",
+                    "extrude": 0.1
+                },
+                {
+                    "name": "text4",
+                    "type": "text",
+                    "value": "test 4",
+                    "font": "mriamc",
+                    "extrude": 0.1
+                },
+                {
+                    "name": "text5",
+                    "type": "text",
+                    "value": "test 5",
+                    "font": "mriamc",
+                    "extrude": 0.3
+                }
+            ],
+            "keyframes": [
+                {
+                    "frame": 1,
+                    "objects": [
+                        {
+                            "name": "text",
+                            "rotation": { "x": 90, "y": 0, "z": 0 }
+                        },
+                        {
+                            "name": "text2",
+                            "rotation": { "x": 90, "y": 0, "z": 0 }
+                        },
+                        {
+                            "name": "text3",
+                            "rotation": { "x": 90, "y": 0, "z": 0 }
+                        },
+                        {
+                            "name": "text4",
+                            "rotation": { "x": 90, "y": 0, "z": 0 }
+                        },
+                        {
+                            "name": "text5",
+                            "rotation": { "x": 90, "y": 0, "z": 0 }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

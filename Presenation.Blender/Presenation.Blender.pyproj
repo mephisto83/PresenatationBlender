@@ -26,6 +26,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="presentationconfig.json" />
+    <Content Include="presentationtext.json" />
+    <Content Include="text.json" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

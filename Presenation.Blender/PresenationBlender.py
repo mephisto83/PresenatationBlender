@@ -1,8 +1,10 @@
+
 bl_info = {
     "name": "Presentation Maker",
     "category": "Animation",
 }
 
+from math import radians
 import bpy
 import os.path
 import json
@@ -27,7 +29,8 @@ class PresentationBlenderAnimation(bpy.types.Operator):
     bl_idname = "object.presentation_blender_maker"
     bl_label = "Presentation Maker"
     bl_options = {'REGISTER', 'UNDO'}
-
+    
+    presentation_armatures = []
     presentation_objects = []
     # total = bpy.props.IntProperty(name="Steps", default=2, min=1, max=100)
 
@@ -62,10 +65,112 @@ class PresentationBlenderAnimation(bpy.types.Operator):
         print("processing animation")
         self.settings = self.loadSettings(config)
         self.scenes = self.loadSceneConfig(config)
+        self.armatures = self.loadArmaturesConfig(self.scenes[0])
         newobjects = self.createObjectsUsed()
+        
         for i in range(len(newobjects)):
             self.presentation_objects.append(newobjects[i])
+        self.parentCreatedObjects()
+        self.configureArmature()
         self.processKeyFrames()
+        self.processArmatures()
+    def processArmatures(self):
+        print("process armatures")
+        #self.presentation_armatures.append({"bone_chains":bone_chains,"armature"
+        #: armature, "rig":rig})
+        bpy.ops.object.mode_set(mode='POSE')
+        for i in range(len(self.presentation_armatures)):
+            bone_chains = self.presentation_armatures[i]["bone_chains"]
+            armature = self.presentation_armatures[i]["armature"]
+            print("armature chains")
+            chains = self.armatures[i]["chain"]
+            print("has armature chains")
+            rig = self.presentation_armatures[i]["rig"]
+            count = 0
+            thresh = 0
+            for j in range(len(bone_chains)):
+                bone_chain = bone_chains[j]
+                chain = chains[j]
+                if count == thresh:
+                    rig.pose.bones["bone.chain." + chain].rotation_quaternion[3] = 1
+                    count = 0
+                    thresh = thresh + 1
+                count = count + 1
+
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+    def configureArmature(self):
+        print("armatures")
+        
+        if self.armatures:
+            print("foreach armature config")
+            for i in range(len(self.armatures)):
+                armatureConfig = self.armatures[i]
+                print("new armature()")
+                armature = bpy.data.armatures.new(armatureConfig["name"])
+                print("new rig()")
+                rig = bpy.data.objects.new("Rig$" + armatureConfig["name"], armature)
+                if "origin" in armatureConfig:
+                    rig.location = [armatureConfig["x"],armatureConfig["y"],armatureConfig["z"]]
+                else :
+                    rig.location = [0,0,0]
+                rig.show_x_ray = True
+                armature.draw_type = "STICK"
+                armature.show_names = True
+                scn = self.context.scene
+                scn.objects.link(rig)
+                scn.objects.active = rig
+                print("update scene")
+                scn.update()
+                bpy.ops.object.mode_set(mode='EDIT')
+                chains = armatureConfig["chain"]
+                bone_chains = []
+                grid = {"x":1,"y":1,"z":1}
+                if "grid" in armatureConfig:
+                    grid = armatureConfig["grid"]
+                if "x" in grid:
+                    print("x in grid")
+                else:
+                    print("no x in grid")
+                x_grid = grid["x"]
+                last_bone = False
+                for j  in range(len(chains)):
+                    chain = chains[j]
+                    bone_chain = armature.edit_bones.new("bone.chain." + chain)
+                    bone_chains.append(bone_chain)
+                    bone_chain.head = (j * x_grid,0,0)
+                    bone_chain.tail = ((j + 1) * x_grid,0,0)
+                    if last_bone:
+                        bone_chain.parent = last_bone
+                        bone_chain.use_connect = True
+                    last_bone = bone_chain
+                #connect bones to targets
+                bpy.ops.object.mode_set(mode='OBJECT')
+                print("Object mode")
+                for j in range(len(chains)):
+                    chain = chains[j]
+                    mdObj = self.getObjectByName(chain)
+                    print("Deselect all objects")
+                    bpy.ops.object.select_all(action='DESELECT')
+                    print("Deselected all objects")
+                    mdObj["object"].select = True
+                    mdObj["object"].location = bone_chains[j].head
+                    print("Pose mode")
+                    if "forceFit" in armatureConfig and armatureConfig["forceFit"] == "True":
+                        print("Force fit")
+                        mdObj["object"].dimensions[0] = grid["x"]
+                        mdObj["object"].dimensions[1] = grid["y"]
+                    bpy.ops.object.mode_set(mode='POSE')
+                    armature.bones.active = rig.pose.bones["bone.chain." + chain].bone
+                    print("setting parent to bone")
+                    bpy.ops.object.parent_set(type='BONE')
+                    print("deselecting")
+                    
+                    bpy.ops.object.mode_set(mode='OBJECT')
+                    mdObj["object"].select = False
+                self.presentation_armatures.append({"bone_chains":bone_chains,"armature" : armature, "rig":rig})
+        bpy.ops.object.mode_set(mode='OBJECT')
+
     def processKeyFrames(self):
         print("process key frames")
         for i in range(len(self.scenes)):
@@ -84,22 +189,49 @@ class PresentationBlenderAnimation(bpy.types.Operator):
                 print("object not found, thats not good!")
             else :
                 self.setObjectProperty(obj, objects[i], keyframe["frame"])
+    def parentCreatedObjects(self):
+        print("Parent created objects")
+        for i in range(len(self.scenes)):
+            print("scene parent ")
+            objs = self.scenes[i]["objects"]
+            for j in range(len(objs)):
+                obj = objs[j]
+                print("scene parent  > OBJECTS")
+                createdObject = self.getObjectByName(obj["name"])
+                if "parent" in obj:
+                    print("has a parent : " + obj["parent"])
+                if createdObject and "parent" in obj:
+                    print("parent name : " + obj["parent"])
+                    parentObj = self.getObjectByName(obj["parent"])
+                    if parentObj:
+                        self.parentObject(parentObj, createdObject)
+
+    def parentObject(self, b, a):
+        print("Parent object a to b")
+        if "object" in a:
+            print("A has object")
+        if "object" in b:
+            print("B has object")
+        a["object"].parent = b["object"]
+        #bpy.ops.object.select_all(action='DESELECT')
+        #a["object"].select = True
+        #b["object"].select = True
+        #bpy.context.scene.objects.active = a["object"]
+        #bpy.ops.object.parent_set()
 
     def setObjectProperty(self, obj, config, frame):
-        print("set obj property")
-
-        if config["position"]:
+        if "position" in config:
             pos = config["position"]
             if "x" in pos:
-                obj["object"].location.x = pos["x"]
+                obj["object"].location.x = float(pos["x"])
                 obj["object"].keyframe_insert(data_path="location", frame=frame, index=0)
             if "y" in pos:
-                obj["object"].location.y = pos["y"]
+                obj["object"].location.y = float(pos["y"])
                 obj["object"].keyframe_insert(data_path="location", frame=frame, index=1)
             if "z" in pos:
-                obj["object"].location.z = pos["z"]
+                obj["object"].location.z = float(pos["z"])
                 obj["object"].keyframe_insert(data_path="location", frame=frame, index=2)
-            print("setting active object")
+   
         if "scale" in config and config["scale"]: 
             scale = config["scale"] 
             if "x" in scale:
@@ -107,15 +239,30 @@ class PresentationBlenderAnimation(bpy.types.Operator):
                 obj["object"].keyframe_insert(data_path="scale", frame=frame, index=0)
                 
             if "y" in scale:
-                obj["object"].scale.y = scale["y"]
+                obj["object"].scale.y = float(scale["y"])
                 obj["object"].keyframe_insert(data_path="scale", frame=frame, index=1)
                 
             if "z" in scale:
-                obj["object"].scale.z = scale["z"]
+                obj["object"].scale.z = float(scale["z"])
                 obj["object"].keyframe_insert(data_path="scale", frame=frame, index=2)
+
+                
+        if "rotation" in config and config["rotation"]: 
+            rotation = config["rotation"] 
+            if "x" in rotation:
+                print(rotation["x"])
+                obj["object"].rotation_euler.x = radians(rotation["x"])
+                obj["object"].keyframe_insert(data_path="rotation_euler", frame=frame, index=0)
+                
+            if "y" in rotation:
+                obj["object"].rotation_euler.y = radians(rotation["y"])
+                obj["object"].keyframe_insert(data_path="rotation_euler", frame=frame, index=1)
+                
+            if "z" in rotation:
+                obj["object"].rotation_euler.z = radians(rotation["z"])
+                obj["object"].keyframe_insert(data_path="rotation_euler", frame=frame, index=2)
             
     def getObjectByName(self, name):
-        print("get object by name")
         for i in range(len(self.presentation_objects)):
             obj = self.presentation_objects[i]
             if obj["name"] == name:
@@ -124,15 +271,12 @@ class PresentationBlenderAnimation(bpy.types.Operator):
         return 0
 
     def setFrame(self, keyframe):
-        print("set frame")
         self.context.scene.frame_current = keyframe["frame"]    
 
     def createObjectsUsed(self):
-        print("create objects used")
         objects = []
         objectnames = []
         for i in range(len(self.scenes)):
-            print("createing objects for each scene")
             scene = self.scenes[i]
             keyframes = scene["keyframes"]
             for k in range(len(keyframes)):
@@ -141,10 +285,8 @@ class PresentationBlenderAnimation(bpy.types.Operator):
                 keyframe_objects = keyframe["objects"]
                 for j in range(len(keyframe_objects)):
                     obj = keyframe_objects[j]
-                    print("check if count is zero")
                     count = objectnames.count(obj["name"])
                     if count == 0:
-                        print("create Object for scene")
                         objectnames.append(obj["name"])
                         newobj = self.createObject(obj, scene["objects"])
                         objects.append(newobj)
@@ -162,17 +304,16 @@ class PresentationBlenderAnimation(bpy.types.Operator):
     def createObjectWithConfig(self, scene_object_config):
         print("Create object with configuration")
         result = {}
+        if "type" in scene_object_config:
+            print(scene_object_config["type"])
+        else:
+           print("Type is missing")
         if(scene_object_config["type"] == "cube"):
-            print("creating a cube")
             bpy.ops.mesh.primitive_cube_add(radius=1, location=(0, 0, 0))
-            print("cube created")
             result["object"] = self.context.active_object
-            print("got active object")
             result["mesh"] = self.context.active_object.data
-            print("got active object mesh")
             return result
         elif scene_object_config["type"] == "text":
-            print("creating text")
             bpy.ops.object.text_add()
             result["text"] = True
             result["object"] = self.context.active_object
@@ -194,7 +335,6 @@ class PresentationBlenderAnimation(bpy.types.Operator):
             return result
 
     def getFont(self, fontname):
-        print("get font")
         fonts = bpy.data.fonts
         for i in range(len(fonts)):
             font = fonts[i]
@@ -213,7 +353,6 @@ class PresentationBlenderAnimation(bpy.types.Operator):
         return 0
 
     def ensureFontLoaded(self, fontname):
-        print("ensure font loaded")
         fonts = bpy.data.fonts
         for i in range(len(fonts)):
             font = fonts[i]
@@ -227,36 +366,50 @@ class PresentationBlenderAnimation(bpy.types.Operator):
         return False
 
     def loadSceneConfig(self, config):
-        print("Load scene configs")
         return config["scenes"]
+    def loadArmaturesConfig(self,config):
+        print("Load armatures config")
+        if "armatures" in config:
+            return config["armatures"]
+        return None
 
     def loadSettings(self, config):
-        print("Loading settings")
         return config["settings"]
 
     def clearObjects(self):
-        print("Clearing objects")
-        print(self)
-        print(self.presentation_objects)
         objlength = len(self.presentation_objects)
         print(" objects to remove")
         for i in range(objlength):
             obj = self.presentation_objects[i]
             obj["object"].select = True
 
-        print("deleting objects")
         bpy.ops.object.delete()
 
-        print("deleted objects")
         for i in range(objlength):
             obj = self.presentation_objects[i]
-            print("removing meshes")
             if "text" in obj:
                 bpy.data.curves.remove(obj["mesh"])
             else:
                 bpy.data.meshes.remove(obj["mesh"])
-
+        
+        
+        if self.presentation_armatures:
+            for i in range(len(self.presentation_armatures)):
+                bpy.ops.object.mode_set(mode='EDIT')
+                for j in range(len(self.presentation_armatures[i]["bone_chains"])):
+                    print("Removing bones")
+                    self.presentation_armatures[i]["armature"].bones.active = self.presentation_armatures[i]["rig"].pose.bones[j].bone
+                print("delete armature")
+                bpy.ops.armature.delete()
+                print("set object")
+                bpy.ops.object.mode_set(mode='OBJECT')
+                print("bpy.data.objects.remove rig")
+                self.context.scene.objects.unlink(self.presentation_armatures[i]["rig"])
+                bpy.data.objects.remove(self.presentation_armatures[i]["rig"])
+                print("bpy.data.armatures.remove")
+                bpy.data.armatures.remove(self.presentation_armatures[i]["armature"])
         del self.presentation_objects[:]
+        del self.presentation_armatures[:]
 
 
 def menu_func(self, context):
